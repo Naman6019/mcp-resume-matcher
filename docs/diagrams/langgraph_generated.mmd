@@ -1,0 +1,39 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	discover_servers(discover_servers)
+	load_job(load_job)
+	list_resumes(list_resumes)
+	batch_read(batch_read)
+	score_candidates(score_candidates)
+	assess_with_llm(assess_with_llm)
+	rank_and_report(rank_and_report)
+	persist_results(persist_results)
+	watch_for_resumes(watch_for_resumes)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> discover_servers;
+	assess_with_llm --> rank_and_report;
+	batch_read --> score_candidates;
+	discover_servers -.-> __end__;
+	discover_servers -.-> load_job;
+	list_resumes -.-> __end__;
+	list_resumes -.-> batch_read;
+	load_job -.-> __end__;
+	load_job -.-> list_resumes;
+	persist_results -.-> __end__;
+	persist_results -.-> watch_for_resumes;
+	rank_and_report --> persist_results;
+	score_candidates -.-> assess_with_llm;
+	score_candidates -.-> rank_and_report;
+	watch_for_resumes -.-> __end__;
+	watch_for_resumes -.-> batch_read;
+	watch_for_resumes -.-> rank_and_report;
+	watch_for_resumes -.-> watch_for_resumes;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
+

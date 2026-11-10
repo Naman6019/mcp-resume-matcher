@@ -1,0 +1,32 @@
+ALEX CHEN
+Frontend Engineer
+alex.chen@example.com | +1 (555) 010-0113 | Vancouver, BC | alexchen.example.dev
+
+PROFESSIONAL SUMMARY
+--------------------
+Frontend engineer with 5 years of experience building accessible, high-performance React and TypeScript applications. Strong eye for design systems and web performance.
+
+EXPERIENCE
+----------
+Frontend Engineer - Pixelforge Studios (2021 - Present)
+  * Led the rebuild of a design system (React, TypeScript, Storybook) adopted by 9 product teams.
+  * Improved Largest Contentful Paint from 4.1s to 1.6s through code-splitting and image optimisation.
+  * Wrote basic Python scripts to automate asset pipelines and generate localisation files.
+
+Junior Web Developer - Harbor Digital (2019 - 2021)
+  * Developed responsive marketing sites with Vue.js and SCSS for 20+ clients.
+  * Introduced automated accessibility testing (axe, Lighthouse CI) into the release pipeline.
+
+EDUCATION
+---------
+B.Sc. Interactive Arts and Technology, Simon Fraser University, 2019
+
+SKILLS
+------
+Languages: TypeScript, JavaScript, HTML, CSS/SCSS; basic Python
+Frameworks: React, Next.js, Vue.js, Redux, Tailwind CSS
+Tooling: Vite, Webpack, Jest, Cypress, Storybook, Figma, GitHub Actions
+
+CERTIFICATIONS
+--------------
+  * Certified Professional in Web Accessibility (WAS), IAAP (2023)

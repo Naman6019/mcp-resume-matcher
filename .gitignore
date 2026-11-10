@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_tmp/
+.pytest_cache/
+.env
+logs/
+data/*.db
+output/*
+!output/.gitkeep
+.claude/
+video/node_modules/
+video/out/
+video/public/clips/
+demo/recordings/

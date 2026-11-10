@@ -1,0 +1,33 @@
+SARA LINDQVIST
+Machine Learning Engineer (NLP)
+sara.lindqvist@example.com | +1 (555) 010-0121 | Boston, MA | github.com/example-slindqvist
+
+PROFESSIONAL SUMMARY
+--------------------
+ML engineer with 4 years of Python experience focused on natural language processing. Ships transformer-based search and classification systems from research prototype to production.
+
+EXPERIENCE
+----------
+Machine Learning Engineer - Verbatim AI (2022 - Present)
+  * Fine-tuned Hugging Face transformer models in Python and PyTorch for document classification (F1 0.93).
+  * Built a semantic-search service with sentence embeddings and FAISS serving 300 queries/second.
+  * Created an evaluation harness in Python that catches regressions before each model release.
+
+Research Engineer - Fjord Language Lab (2020 - 2022)
+  * Trained TensorFlow and Keras sequence models for multilingual named-entity recognition.
+  * Open-sourced a Python library for text-normalisation (1.8k GitHub stars).
+
+EDUCATION
+---------
+M.Sc. Computational Linguistics, Uppsala University, 2020
+B.Sc. Computer Science, KTH Royal Institute of Technology, 2018
+
+SKILLS
+------
+Languages: Python, SQL, C++ (basic)
+ML / NLP: PyTorch, TensorFlow, Hugging Face Transformers, spaCy, FAISS, scikit-learn
+MLOps: MLflow, Docker, FastAPI, AWS SageMaker, GitHub Actions
+
+CERTIFICATIONS
+--------------
+  * DeepLearning.AI TensorFlow Developer Certificate (2021)

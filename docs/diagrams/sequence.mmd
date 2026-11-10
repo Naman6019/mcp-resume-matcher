@@ -1,0 +1,41 @@
+sequenceDiagram
+    autonumber
+    participant A as LangGraph agent<br/>(matching_agent.py)
+    participant H as MCPHub<br/>(official SDK ClientSession x2)
+    participant F as filesystem-mcp<br/>(hand-written, stdio)
+    participant D as candidate-db-mcp<br/>(FastMCP, stdio)
+    Note over H,D: spawn both servers as subprocesses
+    H->>F: initialize {protocolVersion: 2025-11-25}
+    F-->>H: result {capabilities, serverInfo}
+    H->>F: notifications/initialized
+    H->>D: initialize / notifications/initialized
+    A->>H: discover()
+    H->>F: tools/list, resources/list, resources/templates/list, prompts/list
+    H->>D: tools/list, resources/list, ...
+    A->>H: call_tool(candidate_db, get_job)
+    H->>D: tools/call get_job
+    D-->>H: structuredContent {required_skills, ...}
+    A->>H: call_tool(filesystem, list_files)
+    H->>F: tools/call list_files
+    A->>H: call_tool(filesystem, batch_process, progress)
+    H->>F: tools/call batch_process {_meta.progressToken}
+    loop each file (thread pool)
+        F--)H: notifications/progress {progress: n, total: 8}
+    end
+    F-->>H: result {summary, results[8]}
+    Note over A: score_candidates (deterministic) [+ optional LLM notes]
+    A->>H: call_tool(filesystem, write_file report)
+    A->>H: call_tool(candidate_db, save_match_results)
+    opt watch mode
+        A->>H: call_tool(filesystem, watch_directory)
+        H->>F: tools/call watch_directory
+        F-->>H: {watch_id, resource_uri: watch://w_x}
+        loop until the watch window closes
+            A->>H: call_tool(filesystem, poll_watch_events, timeout 5s)
+            Note over F: a resume lands in resumes/ (settled after 1 poll)
+            F--)H: notifications/resources/list_changed
+            F-->>H: {events: [created resumes/new.txt]}
+            A->>H: batch_process(only the new file) -> score -> report -> save
+        end
+        A->>H: call_tool(filesystem, stop_watch)
+    end

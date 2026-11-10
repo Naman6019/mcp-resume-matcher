@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCP Resume Matcher</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <div>
+        <h1>Resume Matcher <em>over MCP</em></h1>
+        <p class="sub">LangGraph agent &middot; 2 MCP servers &middot; JSON-RPC 2.0</p>
+      </div>
+    </div>
+    <div class="servers" id="server-pills"></div>
+    <form class="controls" id="run-form">
+      <label class="field">
+        <span>Job</span>
+        <select id="job-select"></select>
+      </label>
+      <label class="toggle" title="Ask the LLM for a two-sentence assessment of the top candidates">
+        <input type="checkbox" id="llm-toggle"><span class="sw"></span><span>LLM notes</span>
+      </label>
+      <label class="toggle" title="Keep watching resumes/ after the first ranking">
+        <input type="checkbox" id="watch-toggle"><span class="sw"></span><span>Watch</span>
+      </label>
+      <input type="number" id="watch-seconds" value="90" min="10" max="900" step="10" aria-label="Watch seconds">
+      <button type="submit" class="btn primary" id="run-btn"><span class="play"></span>Run agent</button>
+      <button type="button" class="btn ghost" id="reset-btn" title="Remove demo resumes and clear the board">Reset</button>
+    </form>
+  </header>
+
+  <main class="layout">
+    <!-- capability discovery -->
+    <aside class="panel caps" id="caps">
+      <div class="panel-head">
+        <h2>Discovered capabilities</h2>
+        <span class="hint">live from tools/list, resources/list…</span>
+      </div>
+      <div class="caps-body" id="caps-body"></div>
+    </aside>
+
+    <!-- workflow + ranking -->
+    <section class="center">
+      <div class="panel flow">
+        <div class="panel-head">
+          <h2>Agent workflow <small>LangGraph state machine</small></h2>
+          <div class="run-meta" id="run-meta">idle</div>
+        </div>
+        <svg id="flow-svg" viewBox="0 0 940 300" role="img" aria-label="Agent state machine"></svg>
+        <div class="ticker" id="ticker"><span class="tick-node">ready</span><span class="tick-text">Choose a job and run the agent.</span></div>
+      </div>
+
+      <div class="watch-strip" id="watch-strip" hidden>
+        <div class="watch-state"><span class="pulse"></span><b>Watching</b> <code id="watch-dir">resumes/</code> <code id="watch-uri" class="dim"></code> <span class="countdown" id="watch-left"></span></div>
+        <div class="drop-zone"><span class="dim">Simulate an arrival:</span><span id="drop-buttons"></span></div>
+        <ol class="watch-log" id="watch-log"></ol>
+      </div>
+
+      <div class="panel ranking">
+        <div class="panel-head">
+          <h2 id="rank-title">Ranking</h2>
+          <span class="hint" id="rank-hint">scores are deterministic &middot; LLM only writes the notes</span>
+        </div>
+        <ol class="rank-list" id="rank-list"><li class="empty">No ranking yet.</li></ol>
+      </div>
+    </section>
+
+    <!-- protocol inspector -->
+    <aside class="panel inspector">
+      <nav class="tabs" role="tablist">
+        <button role="tab" class="tab active" data-tab="traffic">JSON-RPC traffic <span class="count" id="traffic-count">0</span></button>
+        <button role="tab" class="tab" data-tab="console">Raw console</button>
+        <button role="tab" class="tab" data-tab="ask">Ask the agent</button>
+      </nav>
+
+      <section class="tab-pane active" id="pane-traffic">
+        <div class="filters" id="traffic-filters">
+          <label><input type="checkbox" value="filesystem" checked><i class="dot fs"></i>filesystem</label>
+          <label><input type="checkbox" value="candidate_db" checked><i class="dot db"></i>candidate_db</label>
+          <label><input type="checkbox" value="notifications" checked><i class="dot nt"></i>notifications</label>
+          <button class="btn tiny ghost" id="clear-traffic" type="button">clear</button>
+        </div>
+        <ol class="traffic" id="traffic"></ol>
+      </section>
+
+      <section class="tab-pane" id="pane-console">
+        <p class="pane-note">Talks to the <b>same server</b> over its second transport: <code>POST http://127.0.0.1:<span id="http-port">8765</span>/mcp</code> (Streamable HTTP, session already initialised).</p>
+        <div class="presets" id="presets"></div>
+        <textarea id="rpc-input" spellcheck="false"></textarea>
+        <div class="console-actions">
+          <button class="btn primary" id="rpc-send" type="button">Send request</button>
+          <span class="dim" id="rpc-status"></span>
+        </div>
+        <pre class="rpc-output" id="rpc-output">// response appears here</pre>
+      </section>
+
+      <section class="tab-pane" id="pane-ask">
+        <p class="pane-note">The LLM gets <b>every tool from both MCP servers</b> (via <code>langchain-mcp-adapters</code> on the agent's open sessions) and decides what to call.</p>
+        <form id="ask-form" class="ask-form">
+          <textarea id="ask-input" rows="3">Who are the top 3 candidates for the senior-python-backend job, and what is each one missing?</textarea>
+          <button class="btn primary" type="submit" id="ask-btn">Ask</button>
+        </form>
+        <ol class="ask-trace" id="ask-trace"></ol>
+        <div class="ask-answer" id="ask-answer"></div>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+LENA PARK
+Staff Backend Engineer (Python)
+lena.park@example.com | +1 (555) 010-0137 | Remote, US | github.com/example-lpark
+
+PROFESSIONAL SUMMARY
+--------------------
+Backend engineer with 9 years of Python experience designing payment and ledger services. Builds FastAPI microservices on AWS, runs them on Kubernetes, and cares about correctness under load.
+
+EXPERIENCE
+----------
+Staff Backend Engineer - Ledgerline Payments (2021 - Present)
+  * Architected a FastAPI + PostgreSQL ledger processing 9M transactions/day with exactly-once semantics.
+  * Moved 30 Python microservices from EC2 to Kubernetes (AWS EKS) with Helm and Terraform.
+  * Cut p99 latency 45% with Redis caching and async SQLAlchemy; mentored 6 engineers.
+Senior Software Engineer - Cartwheel Commerce (2016 - 2021)
+  * Built Django and Celery order pipelines; containerised every service with Docker.
+  * Owned CI/CD on GitHub Actions with pytest gates (90%+ coverage) and blue/green deploys.
+
+EDUCATION
+---------
+B.S. Computer Engineering, University of Michigan, 2016
+
+SKILLS
+------
+Languages: Python, SQL, Go (basic)
+Frameworks: FastAPI, Django, Celery, SQLAlchemy, pytest
+Cloud & Infra: AWS (EKS, RDS, SQS), Docker, Kubernetes, Terraform, GitHub Actions
+Data: PostgreSQL, Redis, Kafka

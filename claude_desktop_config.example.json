@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "resume-filesystem": {
+      "command": "C:/path/to/MCP-Resume-Matcher/.venv/Scripts/python.exe",
+      "args": ["C:/path/to/MCP-Resume-Matcher/filesystem_mcp_server.py", "--root", "C:/path/to/MCP-Resume-Matcher"]
+    },
+    "candidate-db": {
+      "command": "C:/path/to/MCP-Resume-Matcher/.venv/Scripts/python.exe",
+      "args": ["C:/path/to/MCP-Resume-Matcher/candidate_db_mcp_server.py"]
+    }
+  }
+}

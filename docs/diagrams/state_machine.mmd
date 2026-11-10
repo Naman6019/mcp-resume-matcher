@@ -1,0 +1,20 @@
+stateDiagram-v2
+    direction TB
+    [*] --> discover_servers
+    discover_servers --> load_job: both servers expose required tools
+    discover_servers --> [*]: missing server / tool (fatal)
+    load_job --> list_resumes: candidate_db.get_job OK
+    load_job --> [*]: unknown job (fatal)
+    list_resumes --> batch_read: filesystem.list_files
+    list_resumes --> [*]: folder missing (fatal)
+    batch_read --> score_candidates: filesystem.batch_process(read)
+    score_candidates --> assess_with_llm: LLM configured
+    score_candidates --> rank_and_report: no LLM
+    assess_with_llm --> rank_and_report: top-N notes written
+    rank_and_report --> persist_results: filesystem.write_file(report)
+    persist_results --> [*]: mode = once
+    persist_results --> watch_for_resumes: mode = watch
+    watch_for_resumes --> batch_read: created / modified (only the new files)
+    watch_for_resumes --> rank_and_report: deleted (re-rank, remove_matches)
+    watch_for_resumes --> watch_for_resumes: no events yet (long-poll again)
+    watch_for_resumes --> [*]: watch window over (stop_watch)

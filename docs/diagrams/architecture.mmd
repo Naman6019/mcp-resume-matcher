@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph host["MCP host process"]
+        direction TB
+        UI["Dashboard (FastAPI + SSE)<br/>or CLI"] --> AG["ResumeMatchingAgent<br/>LangGraph StateGraph"]
+        AG --> SC["resume_scoring.py<br/>(pure, deterministic)"]
+        AG -. optional .-> LLM["LLM (Ollama / OpenAI)<br/>notes + ask mode"]
+        AG --> HUB["MCPHub (mcp_client.py)<br/>persistent ClientSessions<br/>+ JSON-RPC tap"]
+        LLM -. tools via langchain-mcp-adapters .-> HUB
+    end
+    HUB <== "stdio · JSON-RPC 2.0" ==> FS
+    HUB <== "stdio · JSON-RPC 2.0" ==> DB
+    subgraph FS["filesystem_mcp_server.py (hand-written)"]
+        direction TB
+        T1["tools: list_files · read_file · write_file · search_in_file<br/>watch_directory · poll_watch_events · stop_watch · batch_process"]
+        R1["resources: fs:///… · config://server · watch://…<br/>templates: fs:/// dir:/// search:/// watch://"]
+        FT["fs_tools.py (Milestone 1, sandboxed)"]
+        T1 --> FT
+        R1 --> FT
+    end
+    subgraph DB["candidate_db_mcp_server.py (FastMCP)"]
+        T2["tools: list_jobs · get_job · create_job · save_match_results<br/>remove_matches · get_shortlist · get_candidate_history"] --> SQL[("SQLite<br/>jobs · matches · runs")]
+    end
+    FT --> FILES[("resumes/ · output/")]
+    CON["Raw JSON-RPC console / curl"] == "Streamable HTTP POST /mcp" ==> FS2["same server, --transport http"]

@@ -1,0 +1,16 @@
+{
+  "root": ".",
+  "resource_dirs": ["resumes"],
+  "max_read_chars": 20000,
+  "allow_write": true,
+  "batch_max_files": 200,
+  "batch_max_workers": 8,
+  "watch_poll_interval": 0.5,
+  "watch_max_watchers": 16,
+  "page_size": 50,
+  "log_level": "info",
+  "traffic_log": null,
+  "transport": "stdio",
+  "host": "127.0.0.1",
+  "port": 8765
+}
