@@ -1,6 +1,6 @@
 # Test scenarios
 
-Run everything with `pytest` (99 tests, no network or API key). Each scenario links to the test that proves it.
+Run everything with `pytest` (107 tests, no network or API key). Each scenario links to the test that proves it.
 
 ## 1. JSON-RPC 2.0 compliance (`tests/test_jsonrpc_protocol.py`)
 

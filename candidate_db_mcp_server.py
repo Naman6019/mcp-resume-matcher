@@ -26,6 +26,7 @@ from pathlib import Path
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
+from mcp.types import ToolAnnotations
 
 DEFAULT_DB = Path(__file__).resolve().parent / "data" / "candidates.db"
 
@@ -170,6 +171,8 @@ def build_server(db_path: Path) -> FastMCP:
                      "ranked results with save_match_results, read the best candidates with get_shortlist.",
     )
 
+    READ_ONLY = ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True, openWorldHint=False)
+
     def _require_job(job_id: str) -> dict[str, Any]:
         job = db.job(job_id)
         if job is None:
@@ -177,14 +180,14 @@ def build_server(db_path: Path) -> FastMCP:
             raise ValueError(f"Unknown job_id {job_id!r}. Known jobs: {known}")
         return job
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY)
     def list_jobs() -> dict[str, Any]:
         """List every open job posting (id, title, team, required skills)."""
         jobs = db.jobs()
         return {"count": len(jobs), "jobs": [{k: j[k] for k in ("job_id", "title", "team", "location",
                                                                 "min_years", "required_skills")} for j in jobs]}
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY)
     def get_job(job_id: str) -> dict[str, Any]:
         """Full job posting: description, required and nice-to-have skills, minimum years."""
         return _require_job(job_id)
@@ -241,14 +244,14 @@ def build_server(db_path: Path) -> FastMCP:
                           for fp in filepaths)
         return {"removed": removed, "job_id": job_id}
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY)
     def get_shortlist(job_id: str, limit: int = 5, min_score: float = 0) -> dict[str, Any]:
         """Best stored candidates for a job, highest score first."""
         _require_job(job_id)
         rows = db.shortlist(job_id, max(1, min(limit, 100)), min_score)
         return {"job_id": job_id, "count": len(rows), "shortlist": rows}
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY)
     def get_candidate_history(filepath: str) -> dict[str, Any]:
         """Every job a resume has been scored against, with its score there."""
         rows = db.conn.execute(

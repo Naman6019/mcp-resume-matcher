@@ -169,3 +169,45 @@ def test_http_discovery_endpoints(http_server):
     with pytest.raises(urllib.error.HTTPError) as exc:
         urllib.request.urlopen(http_server + "/mcp")
     assert exc.value.code == 405
+
+
+# ---------------- security ---------------- #
+
+def test_non_loopback_http_requires_token(sandbox):
+    with pytest.raises(ValueError, match="auth_token"):
+        ServerConfig.load(cli={"root": str(sandbox), "transport": "http", "host": "0.0.0.0"}, env={})
+    cfg = ServerConfig.load(cli={"root": str(sandbox), "transport": "http", "host": "0.0.0.0", "auth_token": "s3cret"}, env={})
+    assert cfg.public_dict()["auth_token"] == "***"
+
+
+def test_http_bearer_token(sandbox):
+    server = FilesystemMCPServer(ServerConfig.load(cli={"root": str(sandbox), "port": 0, "transport": "http",
+                                                        "auth_token": "s3cret"}, env={}))
+    httpd = fsm.make_http_server(server)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    url = f"http://127.0.0.1:{httpd.server_address[1]}"
+    try:
+        status, headers, body = _post(url, INIT)
+        assert status == 401 and "Bearer" in headers.get("WWW-Authenticate", "")
+        assert _post(url, INIT, {"Authorization": "Bearer wrong"})[0] == 401
+        assert _post(url, INIT, {"Authorization": "Bearer s3cret"})[0] == 200
+        with urllib.request.urlopen(url + "/healthz") as r:          # health stays open for probes
+            assert r.status == 200
+    finally:
+        httpd.shutdown()
+        httpd.server_close()
+
+
+@pytest.mark.parametrize("path", [r"\\evil\share\x.txt", "//evil/share/x.txt", r"\\?\C:\x", "~/x", "Z:/x", "a\x00b"])
+def test_unc_and_device_paths_rejected_without_touching_fs(client, path, monkeypatch):
+    import pathlib
+
+    import fs_tools
+    root = fs_tools.get_root()
+    monkeypatch.setattr(fs_tools, "get_root", lambda: root)     # the root itself may be resolved once
+
+    def boom(*a, **k):
+        raise AssertionError("resolve() must not be reached for " + path)
+    monkeypatch.setattr(pathlib.Path, "resolve", boom)
+    res = client.call("read_file", filepath=path)
+    assert res["isError"] and res["structuredContent"]["error"]["type"] in ("outside_sandbox", "invalid_arguments")

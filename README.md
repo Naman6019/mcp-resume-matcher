@@ -11,7 +11,7 @@
 | Refactored LangGraph agent with an MCP client | [`matching_agent.py`](matching_agent.py) + [`mcp_client.py`](mcp_client.py) |
 | Multi-MCP bonus (a second server: SQLite job/candidate database) | [`candidate_db_mcp_server.py`](candidate_db_mcp_server.py) |
 | State machine / workflow diagrams of agent ↔ MCP interaction | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/diagrams/`](docs/diagrams) |
-| Test scenarios | [`docs/TEST_SCENARIOS.md`](docs/TEST_SCENARIOS.md), [`tests/`](tests) (99 tests) |
+| Test scenarios | [`docs/TEST_SCENARIOS.md`](docs/TEST_SCENARIOS.md), [`tests/`](tests) (107 tests) |
 | Live dashboard used in the demo video | [`dashboard/`](dashboard) |
 | Demo video source (Remotion) | [`video/`](video) |
 
@@ -197,10 +197,17 @@ In `--ask` mode the LLM gets the tools of **both** servers and picks between the
 ## Tests
 
 ```bash
-pytest          # 99 tests, ~1 min, no network or API key needed
+pytest          # 107 tests, ~40 s, no network or API key needed
 ```
 
 See [`docs/TEST_SCENARIOS.md`](docs/TEST_SCENARIOS.md) for the scenario list. Highlights: JSON-RPC edge cases (batches, null ids, bad ids, notifications never answered), every error code, version negotiation, pagination, watch events including the half-written-file case, progress notifications, both transports, **official SDK client interop**, the full agent against real server subprocesses (once / watch / LLM / LLM failure / unknown job / ask), and the architecture guard.
+
+## Security
+
+* **Sandbox**: every path is checked *lexically* before the file system is touched. UNC paths (`\\host\share`, `//host/share`), the `\\?\` device prefix, other drives, `~` and NUL bytes are rejected, so resolving a path can never make Windows contact a remote host. After that, symlinks are resolved and checked again.
+* **HTTP transport**: binds to `127.0.0.1` by default and checks `Origin` against DNS rebinding. Optional bearer token (`MCP_FS_AUTH_TOKEN`), **mandatory** for any non-loopback bind: the server refuses to start without one. The Docker image is read-only (`write_file` disabled) and requires the token.
+* **LLM tools**: in ask mode the model only gets tools annotated `readOnlyHint: true` (both servers annotate theirs). Resume text is untrusted input, so a prompt-injected model cannot write, delete or alter stored results.
+* **Dashboard**: serves only `localhost` Host headers and same-machine Origins (blocks DNS rebinding and CSRF against `/api/*`).
 
 ## Project layout
 

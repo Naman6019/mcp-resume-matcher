@@ -26,7 +26,7 @@ from typing import Any
 
 import httpx
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -183,6 +183,21 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="MCP Resume Matcher dashboard", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+_LOCAL_HOSTS = {"127.0.0.1", "localhost", "[::1]"}
+
+
+@app.middleware("http")
+async def local_only(request: Request, call_next):
+    """The dashboard can drive the agent, drop files and send raw JSON-RPC, so only serve it
+    to this machine: reject foreign Host headers (DNS rebinding) and cross-site Origins (CSRF)."""
+    host = (request.headers.get("host") or "").rsplit(":", 1)[0].lower()
+    origin = request.headers.get("origin")
+    if host not in _LOCAL_HOSTS:
+        return JSONResponse({"detail": "Host not allowed"}, status_code=403)
+    if origin and origin.split("://", 1)[-1].rsplit(":", 1)[0].lower() not in _LOCAL_HOSTS:
+        return JSONResponse({"detail": "Origin not allowed"}, status_code=403)
+    return await call_next(request)
 
 
 @app.get("/")

@@ -140,6 +140,10 @@ async def test_hub_errors(specs):
             await hub.call_tool("filesystem", "read_file", {"filepath": "../../x"})
         with pytest.raises(KeyError):
             await hub.call_tool("nope", "x")
+        names = {t.name for t in await hub.langchain_tools()}
+        assert {"get_shortlist", "read_file", "batch_process"} <= names
+        assert not names & {"write_file", "save_match_results", "remove_matches", "create_job", "stop_watch"}
+        assert "write_file" in {t.name for t in await hub.langchain_tools(read_only=False)}
         disc = await hub.discover()
         assert disc["filesystem"]["server_info"]["name"] == "filesystem-mcp"
         assert len(disc["candidate_db"]["tools"]) == 7

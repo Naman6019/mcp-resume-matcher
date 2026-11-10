@@ -35,6 +35,7 @@ from __future__ import annotations
 import argparse
 import base64
 import dataclasses
+import hmac
 import json
 import logging
 import os
@@ -159,6 +160,7 @@ class ServerConfig:
     transport: str = "stdio"
     host: str = "127.0.0.1"
     port: int = 8765
+    auth_token: str | None = None      # required bearer token for HTTP (mandatory off-loopback)
     source: dict[str, str] = field(default_factory=dict, repr=False)
 
     _ENV_PREFIX = "MCP_FS_"
@@ -230,9 +232,14 @@ class ServerConfig:
                 raise ValueError(f"{name} must be >= 1")
         if self.watch_poll_interval <= 0:
             raise ValueError("watch_poll_interval must be > 0")
+        if self.transport == "http" and self.host not in ("127.0.0.1", "localhost", "::1") and not self.auth_token:
+            raise ValueError("binding the HTTP transport to a non-loopback host requires auth_token "
+                             "(MCP_FS_AUTH_TOKEN); refusing to expose the file system unauthenticated")
 
     def public_dict(self) -> dict[str, Any]:
         data = {f.name: getattr(self, f.name) for f in self.fields()}
+        if data.get("auth_token"):
+            data["auth_token"] = "***"     # never echo secrets
         data["sources"] = dict(self.source)
         return data
 
@@ -1282,6 +1289,17 @@ def make_http_server(server: FilesystemMCPServer) -> ThreadingHTTPServer:
             if data:
                 self.wfile.write(data)
 
+        def _authorized(self) -> bool:
+            token = server.config.auth_token
+            if not token:
+                return True
+            given = self.headers.get("Authorization", "")
+            ok = given.startswith("Bearer ") and hmac.compare_digest(given[7:].encode(), token.encode())
+            if not ok:
+                self._send(401, _error_response(None, JsonRpcError(INVALID_REQUEST, "Missing or invalid bearer token")),
+                           {"WWW-Authenticate": 'Bearer realm="filesystem-mcp"'})
+            return ok
+
         def _origin_ok(self) -> bool:
             origin = self.headers.get("Origin")
             return origin is None or bool(_LOCAL_ORIGINS.match(origin))
@@ -1300,6 +1318,8 @@ def make_http_server(server: FilesystemMCPServer) -> ThreadingHTTPServer:
                 self._send(404, {"error": "not found"})
 
         def do_DELETE(self) -> None:  # noqa: N802
+            if not self._authorized():
+                return
             sid = self.headers.get("Mcp-Session-Id")
             with lock:
                 sess = sessions.pop(sid, None) if sid else None
@@ -1312,6 +1332,8 @@ def make_http_server(server: FilesystemMCPServer) -> ThreadingHTTPServer:
         def do_POST(self) -> None:  # noqa: N802
             if urlsplit(self.path).path != "/mcp":
                 self._send(404, {"error": "not found"})
+                return
+            if not self._authorized():
                 return
             if not self._origin_ok():
                 self._send(403, _error_response(None, JsonRpcError(INVALID_REQUEST, "Origin not allowed")))
@@ -1374,6 +1396,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument("--log-level", choices=_LOG_LEVELS)
     p.add_argument("--traffic-log", help="Append every JSON-RPC message to this JSONL file")
     p.add_argument("--read-only", action="store_true", help="Disable write_file")
+    p.add_argument("--auth-token", help="Bearer token required on HTTP requests (prefer MCP_FS_AUTH_TOKEN)")
     p.add_argument("--print-config", action="store_true", help="Print the effective configuration and exit")
     return p
 
@@ -1382,7 +1405,7 @@ def main(argv: list[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
     cli = {"root": args.root, "resource_dirs": args.resource_dirs, "transport": args.transport, "host": args.host,
            "port": args.port, "log_level": args.log_level, "traffic_log": args.traffic_log,
-           "allow_write": False if args.read_only else None}
+           "allow_write": False if args.read_only else None, "auth_token": args.auth_token}
     try:
         config = ServerConfig.load(cli=cli, config_path=args.config)
     except ValueError as exc:

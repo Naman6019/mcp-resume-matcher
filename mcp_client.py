@@ -229,13 +229,21 @@ class MCPHub:
             out[name] = entry
         return out
 
-    async def langchain_tools(self, servers: list[str] | None = None) -> list[Any]:
-        """Wrap the tools of the open sessions as LangChain tools (for LLM tool calling)."""
+    async def langchain_tools(self, servers: list[str] | None = None, read_only: bool = True) -> list[Any]:
+        """Wrap the tools of the open sessions as LangChain tools (for LLM tool calling).
+
+        ``read_only`` (the default) keeps only tools annotated ``readOnlyHint: true``: resume text
+        is untrusted input, so a prompt-injected model must not be able to write or delete."""
         from langchain_mcp_adapters.tools import load_mcp_tools
 
         tools: list[Any] = []
         for name in servers or list(self.sessions):
-            tools += await load_mcp_tools(self.sessions[name], server_name=name)
+            loaded = await load_mcp_tools(self.sessions[name], server_name=name)
+            if read_only:
+                allowed = {t.name for t in (await self.sessions[name].list_tools()).tools
+                           if t.annotations is not None and t.annotations.readOnlyHint}
+                loaded = [t for t in loaded if t.name in allowed]
+            tools += loaded
         return tools
 
 

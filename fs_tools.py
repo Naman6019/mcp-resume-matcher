@@ -136,15 +136,28 @@ def _resolve(path: str) -> Path:
     if not isinstance(path, str) or not path.strip():
         raise InvalidArgumentError("Path must be a non-empty string.")
     root = get_root()
-    raw = Path(path.strip()).expanduser()
-    candidate = (raw if raw.is_absolute() else root / raw).resolve()  # collapses '..', follows symlinks
+    denied = PathOutsideSandboxError(
+        f"Access denied: '{path}' is outside the allowed directory. "
+        "Use a path relative to the project root, e.g. 'resumes/resume_john_doe.pdf'.")
+    text = path.strip()
+    # Lexical checks first, before anything touches the file system: UNC / device paths
+    # (two leading backslashes, //host/share, the \\?\ device prefix) would make Windows contact a remote host when
+    # resolved, and '~' expansion points outside the root by definition.
+    if text.startswith(("\\\\", "//", "~")) or "\x00" in text:
+        raise denied
+    raw = Path(text)
+    lexical = Path(os.path.normpath(raw if raw.is_absolute() else root / raw))
+    if os.path.splitdrive(str(lexical))[0].lower() != os.path.splitdrive(str(root))[0].lower():
+        raise denied
+    try:
+        lexical.relative_to(root)
+    except ValueError:
+        raise denied from None
+    candidate = lexical.resolve()  # follows symlinks; re-checked below so links cannot escape
     try:
         candidate.relative_to(root)
     except ValueError:
-        raise PathOutsideSandboxError(
-            f"Access denied: '{path}' is outside the allowed directory. "
-            "Use a path relative to the project root, e.g. 'resumes/resume_john_doe.pdf'."
-        ) from None
+        raise denied from None
     return candidate
 
 
