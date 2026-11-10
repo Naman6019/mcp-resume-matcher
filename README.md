@@ -2,7 +2,7 @@
 
 **Milestone 2: the Milestone 1 file-system tools as a Model Context Protocol server, and a LangGraph resume-matching agent that reaches files and data only through MCP.**
 
-[![tests](https://github.com/namanmanocha19/mcp-resume-matcher/actions/workflows/tests.yml/badge.svg)](https://github.com/namanmanocha19/mcp-resume-matcher/actions/workflows/tests.yml)
+[![tests](https://github.com/Naman6019/mcp-resume-matcher/actions/workflows/tests.yml/badge.svg)](https://github.com/Naman6019/mcp-resume-matcher/actions/workflows/tests.yml)
 
 | Deliverable | Where |
 |---|---|
