@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import json
+import sys
 import threading
 import urllib.request
 from pathlib import Path
@@ -198,7 +199,9 @@ def test_http_bearer_token(sandbox):
         httpd.server_close()
 
 
-@pytest.mark.parametrize("path", [r"\\evil\share\x.txt", "//evil/share/x.txt", r"\\?\C:\x", "~/x", "Z:/x", "a\x00b"])
+@pytest.mark.parametrize("path", [r"\\evil\share\x.txt", "//evil/share/x.txt", r"\\?\C:\x", "~/x", "a\x00b",
+    # a drive letter only means "another drive" on Windows; elsewhere "Z:" is an ordinary folder name
+    pytest.param("Z:/x", marks=pytest.mark.skipif(sys.platform != "win32", reason="drive letters are Windows-only"))])
 def test_unc_and_device_paths_rejected_without_touching_fs(client, path, monkeypatch):
     import pathlib
 

@@ -202,6 +202,22 @@ pytest          # 107 tests, ~40 s, no network or API key needed
 
 See [`docs/TEST_SCENARIOS.md`](docs/TEST_SCENARIOS.md) for the scenario list. Highlights: JSON-RPC edge cases (batches, null ids, bad ids, notifications never answered), every error code, version negotiation, pagination, watch events including the half-written-file case, progress notifications, both transports, **official SDK client interop**, the full agent against real server subprocesses (once / watch / LLM / LLM failure / unknown job / ask), and the architecture guard.
 
+## Demo video
+
+The 5:24 demo is built with [Remotion](https://www.remotion.dev) from real recordings of the dashboard:
+
+```bash
+python -m dashboard.app                    # 1. start the dashboard (and both MCP servers)
+python demo/record_demo.py                 # 2. Playwright drives 5 scripted scenes; frames come from the
+                                           #    Chrome DevTools screencast -> video/public/clips/*.mp4
+python demo/make_slowmo.py run 3.45 4.75 6 # 3. slow-motion replay of the 0.5 s agent run
+cd video && npm install
+npx remotion studio                        # 4. preview / edit
+npx remotion render DemoVideo out/mcp-resume-matcher-demo.mp4
+```
+
+Scenes (`video/src/`): intro, animated architecture, the raw stdio exchange from `demo/raw_stdio_*.jsonl`, then the recorded dashboard scenes with zoom-ins and captions, the test suite, and deliverables. Fast-forwards and the slow-motion replay are labelled on screen. The narration script, timed to the video, is in [`demo/VOICEOVER_SCRIPT.md`](demo/VOICEOVER_SCRIPT.md).
+
 ## Security
 
 * **Sandbox**: every path is checked *lexically* before the file system is touched. UNC paths (`\\host\share`, `//host/share`), the `\\?\` device prefix, other drives, `~` and NUL bytes are rejected, so resolving a path can never make Windows contact a remote host. After that, symlinks are resolved and checked again.

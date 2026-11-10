@@ -350,7 +350,13 @@ async def reset() -> dict[str, Any]:
         if (RESUMES / p.name).exists():
             (RESUMES / p.name).unlink()
             removed.append(p.name)
+    if S.hub is not None:   # forget demo candidates in the DB too (through MCP, like everything else)
+        demo_paths = [f"resumes/{p.name}" for p in INCOMING.iterdir()]
+        for job in S.jobs:
+            with contextlib.suppress(Exception):
+                await S.hub.call_tool(DB, "remove_matches", {"job_id": job["job_id"], "filepaths": demo_paths})
     S.last_ranking = []
+    await _refresh_discovery()
     return {"removed": removed}
 
 

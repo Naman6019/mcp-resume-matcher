@@ -80,8 +80,10 @@ def test_watch_is_idempotent_and_stoppable(client):
     a = client.call("watch_directory", directory="resumes")["structuredContent"]
     b = client.call("watch_directory", directory="resumes")["structuredContent"]
     assert a["watch_id"] == b["watch_id"] and b["already_watching"] is True
+    client.notifications.clear()
     stopped = client.call("stop_watch", watch_id=a["watch_id"])
     assert stopped["isError"] is False
+    assert any(n["method"] == "notifications/resources/list_changed" for n in client.notifications)
     again = client.call("poll_watch_events", watch_id=a["watch_id"])
     assert again["isError"] and again["structuredContent"]["error"]["type"] == "not_found"
     assert client.call("stop_watch", watch_id=a["watch_id"])["isError"]

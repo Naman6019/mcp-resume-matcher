@@ -13,3 +13,4 @@ video/node_modules/
 video/out/
 video/public/clips/
 demo/recordings/
+demo/record_log.txt

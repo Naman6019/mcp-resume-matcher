@@ -927,6 +927,7 @@ class FilesystemMCPServer:
             watcher = DirectoryWatcher(watch_id, rel, abs_dir, exts, interval, self._on_watch_events)
             self._watchers[watch_id] = watcher
             self._watch_owner[watch_id] = ctx.session
+        ctx.session.send("notifications/resources/list_changed", {})   # a watch:// resource appeared
         ctx.log("info", {"event": "watch_started", "watch_id": watch_id, "directory": rel})
         return {"success": True, "already_watching": False, **watcher.describe(), "baseline_files": watcher.baseline()}
 
@@ -967,6 +968,7 @@ class FilesystemMCPServer:
             raise ToolError(f"Unknown watch_id {watch_id!r}", "not_found")
         w.stop()
         ctx.session.subscriptions.discard(w.uri)
+        ctx.session.send("notifications/resources/list_changed", {})   # its watch:// resource is gone
         return {"success": True, "watch_id": watch_id, "stopped": True, "events_seen": w.next_seq - 1}
 
     def stop_all_watchers(self, session: Session | None = None) -> None:
