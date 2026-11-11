@@ -32,7 +32,7 @@ export const tour = def({
 // ------------------------------------------------------------------ run
 const runSeg: Segment[] = [
   { src: "run", from: 0, to: 4.8 },
-  { src: "run_slowmo", from: 0, to: 8.0, badge: "replay · 6× slow motion · real run ≈ 0.5 s" },
+  { src: "run_slowmo", from: 0, to: 8.0, badge: "replay · {x} slow motion · real run ≈ 0.5 s", slowmo: 6 },
   { src: "run", from: 4.8, to: 33.85 },
 ];
 const r = (t: number) => sceneTime(runSeg, "run", t);
@@ -63,7 +63,7 @@ export const run = def({
 // ------------------------------------------------------------------ watch
 const watchSeg: Segment[] = [
   { src: "watch", from: 0, to: 34.6 },
-  { src: "watch", from: 34.6, to: 58.6, rate: 8, badge: "8× · waiting for the watch window to close" },
+  { src: "watch", from: 34.6, to: 58.6, rate: 8, badge: "{x} · waiting for the watch window to close" },
   { src: "watch", from: 58.6, to: 61.9 },
 ];
 const w = (t: number) => sceneTime(watchSeg, "watch", t);
@@ -115,9 +115,9 @@ export const consoleScene = def({
 // ------------------------------------------------------------------ llm
 const llmSeg: Segment[] = [
   { src: "llm", from: 0, to: 6.1 },
-  { src: "llm", from: 6.1, to: 26.6, rate: 2.5, badge: "2.5× · local LLM via Ollama" },
+  { src: "llm", from: 6.1, to: 26.6, rate: 2.5, badge: "{x} · local LLM via Ollama" },
   { src: "llm", from: 26.6, to: 38.4 },
-  { src: "llm", from: 38.4, to: 54.5, rate: 2.5, badge: "2.5× · local LLM via Ollama" },
+  { src: "llm", from: 38.4, to: 54.5, rate: 2.5, badge: "{x} · local LLM via Ollama" },
   { src: "llm", from: 54.5, to: 61.7 },
 ];
 const l = (t: number) => sceneTime(llmSeg, "llm", t);

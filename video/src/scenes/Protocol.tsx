@@ -1,5 +1,6 @@
+import { useSceneFrame } from "../timescale";
 import React from "react";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Easing, interpolate } from "remotion";
 import { backdrop, C, display, mono, s } from "../theme";
 
 /* Real messages from demo/raw_stdio_session.jsonl -> demo/raw_stdio_output.jsonl, shortened with "…".
@@ -41,7 +42,7 @@ const CODES: { code: string; label: string; at: number; color: string }[] = [
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
 
 const Term: React.FC<{ x: number; w: number; title: string; lines: Line[]; arrow: string }> = ({ x, w, title, lines, arrow }) => {
-  const frame = useCurrentFrame();
+  const frame = useSceneFrame();
   const t = frame / 30;
   return (
     <div style={{ position: "absolute", left: x, top: 145, width: w, height: 640, borderRadius: 16, background: "#0b0a08",
@@ -70,7 +71,7 @@ const Term: React.FC<{ x: number; w: number; title: string; lines: Line[]; arrow
 };
 
 export const Protocol: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useSceneFrame();
   const t = frame / 30;
   const head = interpolate(frame, [0, 15], [0, 1], { extrapolateRight: "clamp" });
   const outOfOrder = interpolate(t, [25.6, 26.2], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });

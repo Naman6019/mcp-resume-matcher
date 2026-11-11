@@ -1,5 +1,6 @@
+import { useSceneFrame } from "../timescale";
 import React from "react";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Easing, interpolate } from "remotion";
 import { backdrop, C, display, mono, s } from "../theme";
 
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
@@ -9,7 +10,7 @@ const appear = (frame: number, start: number, dur = 20) =>
 type BoxProps = { x: number; y: number; w: number; h: number; color: string; title: string; tag?: string; at: number;
   children?: React.ReactNode };
 const Box: React.FC<BoxProps> = ({ x, y, w, h, color, title, tag, at, children }) => {
-  const frame = useCurrentFrame();
+  const frame = useSceneFrame();
   const p = appear(frame, at);
   return (
     <div style={{ position: "absolute", left: x, top: y, width: w, height: h, borderRadius: 16, background: C.panel,
@@ -26,7 +27,7 @@ const Box: React.FC<BoxProps> = ({ x, y, w, h, color, title, tag, at, children }
 };
 
 const Chips: React.FC<{ items: string[]; color: string; at: number }> = ({ items, color, at }) => {
-  const frame = useCurrentFrame();
+  const frame = useSceneFrame();
   return (
     <div style={{ display: "flex", flexWrap: "wrap", gap: 9, marginTop: 16 }}>
       {items.map((t, i) => (
@@ -44,7 +45,7 @@ const WIRES = [
 ];
 
 export const Architecture: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useSceneFrame();
   const wireP = appear(frame, s(5), 30);
   const banner = appear(frame, s(17), 24);
   return (

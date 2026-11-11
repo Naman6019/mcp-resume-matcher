@@ -1,5 +1,6 @@
+import { useSceneFrame } from "../timescale";
 import React from "react";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Easing, interpolate } from "remotion";
 import { backdrop, C, display, mono } from "../theme";
 
 const ITEMS = [
@@ -12,7 +13,7 @@ const ITEMS = [
 ];
 
 export const Outro: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useSceneFrame();
   const t = frame / 30;
   const on = (at: number) => interpolate(t, [at, at + 0.5], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp",
     easing: Easing.bezier(0.16, 1, 0.3, 1) });

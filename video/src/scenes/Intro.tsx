@@ -1,5 +1,6 @@
+import { useSceneFrame } from "../timescale";
 import React from "react";
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, Easing, interpolate } from "remotion";
 import { backdrop, C, display, mono, s } from "../theme";
 
 const ease = Easing.bezier(0.16, 1, 0.3, 1);
@@ -13,7 +14,7 @@ const CHIPS: [string, string][] = [
 ];
 
 export const Intro: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useSceneFrame();
   return (
     <AbsoluteFill style={{ ...backdrop, justifyContent: "center", paddingLeft: 170 }}>
       <div style={{ display: "flex", gap: 12, marginBottom: 46, rotate: "-12deg", width: 60 }}>

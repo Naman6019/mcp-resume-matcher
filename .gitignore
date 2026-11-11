@@ -14,3 +14,4 @@ video/out/
 video/public/clips/
 demo/recordings/
 demo/record_log.txt
+video/public/vo/*.mp4

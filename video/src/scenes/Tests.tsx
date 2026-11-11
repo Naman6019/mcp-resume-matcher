@@ -1,5 +1,6 @@
+import { useSceneFrame } from "../timescale";
 import React from "react";
-import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate } from "remotion";
 import { backdrop, C, display, mono } from "../theme";
 
 /* Real output: `pytest` (107 passed) and `python matching_agent.py --job senior-python-backend --llm none -v`. */
@@ -31,7 +32,7 @@ const CLI = [
 ];
 
 export const Tests: React.FC = () => {
-  const frame = useCurrentFrame();
+  const frame = useSceneFrame();
   const t = frame / 30;
   const on = (at: number) => interpolate(t, [at, at + 0.3], [0, 1], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return (

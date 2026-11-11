@@ -204,19 +204,22 @@ See [`docs/TEST_SCENARIOS.md`](docs/TEST_SCENARIOS.md) for the scenario list. Hi
 
 ## Demo video
 
-The 5:24 demo is built with [Remotion](https://www.remotion.dev) from real recordings of the dashboard:
+The narrated demo (6:00) is built with [Remotion](https://www.remotion.dev) from real recordings of the dashboard:
 
 ```bash
 python -m dashboard.app                    # 1. start the dashboard (and both MCP servers)
 python demo/record_demo.py                 # 2. Playwright drives 5 scripted scenes; frames come from the
                                            #    Chrome DevTools screencast -> video/public/clips/*.mp4
 python demo/make_slowmo.py run 3.45 4.75 6 # 3. slow-motion replay of the 0.5 s agent run
+python demo/prepare_voiceover.py           # 4. clean the narration in video/public/vo/*.mp4 -> vo/clean/*.m4a
 cd video && npm install
-npx remotion studio                        # 4. preview / edit
-npx remotion render DemoVideo out/mcp-resume-matcher-demo.mp4
+npx remotion studio                        # 5. preview / edit
+npx remotion render DemoVideo out/mcp-resume-matcher-demo-vo.mp4
 ```
 
-Scenes (`video/src/`): intro, animated architecture, the raw stdio exchange from `demo/raw_stdio_*.jsonl`, then the recorded dashboard scenes with zoom-ins and captions, the test suite, and deliverables. Fast-forwards and the slow-motion replay are labelled on screen. The narration script, timed to the video, is in [`demo/VOICEOVER_SCRIPT.md`](demo/VOICEOVER_SCRIPT.md).
+Scenes (`video/src/`): intro, animated architecture, the raw stdio exchange from `demo/raw_stdio_*.jsonl`, then the recorded dashboard scenes with zoom-ins and captions, the test suite, and deliverables. Fast-forwards and the slow-motion replay are labelled on screen.
+
+**Narration.** One recording per section of [`demo/VOICEOVER_SCRIPT.md`](demo/VOICEOVER_SCRIPT.md). `prepare_voiceover.py` trims silence, shortens long pauses, normalises loudness to -16 LUFS and speeds speech up 6% (pitch preserved; `--tempo 1.0` keeps the original pace). It writes the clip lengths to `video/src/vo.json`. The timeline sizes every scene to its narration: animated scenes stretch their timing, and recorded scenes play at 0.75–1.3× so captions and zooms stay on cue. Speed badges show the effective rate.
 
 ## Security
 

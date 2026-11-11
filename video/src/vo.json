@@ -1,0 +1,42 @@
+{
+ "Intro": {
+  "file": "vo/clean/intro.m4a",
+  "seconds": 12.2
+ },
+ "Architecture": {
+  "file": "vo/clean/architecture.m4a",
+  "seconds": 39.5
+ },
+ "Protocol": {
+  "file": "vo/clean/on-the-wire.m4a",
+  "seconds": 60.8
+ },
+ "Dashboard tour": {
+  "file": "vo/clean/dashboard-tour.m4a",
+  "seconds": 30.5
+ },
+ "Run": {
+  "file": "vo/clean/one-run.m4a",
+  "seconds": 46.1
+ },
+ "Watch directory": {
+  "file": "vo/clean/watch-directory.m4a",
+  "seconds": 43.7
+ },
+ "Raw console": {
+  "file": "vo/clean/json-rpc-and-error-handling.m4a",
+  "seconds": 56.0
+ },
+ "LLM + ask": {
+  "file": "vo/clean/llm-notes.m4a",
+  "seconds": 30.6
+ },
+ "Tests": {
+  "file": "vo/clean/tests.m4a",
+  "seconds": 22.8
+ },
+ "Outro": {
+  "file": "vo/clean/deliverables.m4a",
+  "seconds": 12.9
+ }
+}

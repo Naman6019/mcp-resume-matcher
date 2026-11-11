@@ -4,7 +4,9 @@ import { AbsoluteFill, Easing, interpolate, Sequence, staticFile, useCurrentFram
 import { C, display, FPS, mono, s, sans } from "../theme";
 
 /** A piece of a recorded clip. `from`/`to` are seconds in the source file. */
-export type Segment = { src: string; from: number; to: number; rate?: number; badge?: string };
+/** `badge` may contain "{x}", replaced by the effective speed-up (fast-forward) or, with
+ *  `slowmo`, the effective slow-down factor of a replay clip. */
+export type Segment = { src: string; from: number; to: number; rate?: number; badge?: string; slowmo?: number };
 /** Times below are in *scene* seconds (use `sceneTime()` to convert from clip time). */
 export type Caption = { at: number; text: string };
 export type Zoom = { from: number; to: number; x: number; y: number; scale: number };
@@ -15,6 +17,8 @@ export type ClipSceneProps = {
   segments: Segment[];
   captions: Caption[];
   zooms?: Zoom[];
+  /** Playback speed of the whole scene (fit to narration): 0.9 = 10% slower. */
+  pace?: number;
 };
 
 const segDuration = (g: Segment) => (g.to - g.from) / (g.rate ?? 1);
@@ -38,9 +42,11 @@ const VY = 84;
 
 const ease = Easing.bezier(0.45, 0, 0.2, 1);
 
-export const ClipScene: React.FC<ClipSceneProps> = ({ chapter, title, segments, captions, zooms = [] }) => {
+const fmtX = (x: number) => `${Number(x.toFixed(1))}×`;
+
+export const ClipScene: React.FC<ClipSceneProps> = ({ chapter, title, segments, captions, zooms = [], pace = 1 }) => {
   const frame = useCurrentFrame();
-  const t = frame / FPS;
+  const t = (frame / FPS) * pace; // "design time": captions and zooms are keyed to pace 1
 
   // ---- zoom: pick the strongest active zoom, ease in/out over 0.7 s
   let zx = 0, zy = 0, zs = 1;
@@ -65,9 +71,9 @@ export const ClipScene: React.FC<ClipSceneProps> = ({ chapter, title, segments, 
     acc += segDuration(g);
     if (t >= start && t < acc) active = g;
     return (
-      <Sequence key={i} from={s(start)} durationInFrames={Math.max(1, s(segDuration(g)))} name={`${g.src} ${g.from}-${g.to}s`}>
+      <Sequence key={i} from={s(start / pace)} durationInFrames={Math.max(1, s(segDuration(g) / pace))} name={`${g.src} ${g.from}-${g.to}s`}>
         <Video src={staticFile(`clips/${g.src}.mp4`)} trimBefore={Math.round(g.from * FPS)} trimAfter={Math.round(g.to * FPS)}
-          playbackRate={g.rate ?? 1} muted style={{ width: 1920, height: 1080 }} />
+          playbackRate={(g.rate ?? 1) * pace} muted style={{ width: 1920, height: 1080 }} />
       </Sequence>
     );
   });
@@ -98,7 +104,7 @@ export const ClipScene: React.FC<ClipSceneProps> = ({ chapter, title, segments, 
         {active?.badge ? (
           <div style={{ position: "absolute", right: 18, top: 16, background: "rgba(15,14,12,.88)", border: `1px solid ${C.db}`,
             color: C.db, fontFamily: mono, fontWeight: 600, fontSize: 22, padding: "8px 14px", borderRadius: 10 }}>
-            {active.badge}
+            {active.badge.replace("{x}", fmtX(active.slowmo ? active.slowmo / pace : (active.rate ?? 1) * pace))}
           </div>
         ) : null}
       </div>
